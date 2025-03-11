@@ -2,6 +2,7 @@ package com.laohei.splash_screen
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.core.animateFloat
@@ -18,6 +19,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,6 +37,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.laohei.splash_screen.ui.theme.Splash_screenTheme
+import com.laohei.splash_screen.util.hideSystemUI
+import com.laohei.splash_screen.util.showSystemUI
 import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 
@@ -79,10 +83,18 @@ sealed interface Route {
 fun SplashScreen(
     navController: NavHostController = rememberNavController()
 ) {
+    val localActivity = LocalActivity.current
 
     var step by remember { mutableStateOf<SplashStep>(SplashStep.None) }
 
     val transition = updateTransition(targetState = step, label = "transition")
+
+    DisposableEffect(Unit) {
+        localActivity?.hideSystemUI()
+        onDispose {
+            localActivity?.showSystemUI()
+        }
+    }
 
     // 设置动画
     LaunchedEffect(Unit) {
@@ -98,6 +110,7 @@ fun SplashScreen(
             launchSingleTop = true // 设置主页为单例
         }
     }
+
 
     val alpha by transition.animateFloat(
         transitionSpec = { tween(durationMillis = 600) },
